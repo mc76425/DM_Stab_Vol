@@ -1,1 +1,0 @@
-Revoir les calculs des éléments de la matrice B, beaucoup de pb de notation, slide 24 Tutorial 2.
