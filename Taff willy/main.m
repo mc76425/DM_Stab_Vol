@@ -4,7 +4,7 @@
 %Copyrigth Beer version: Si tu te sers de mon travail paie une bière
 
 clear all; clc;
-%% Let's set up airplane config:
+%Let's set up airplane config:
 %Nomainal Configuration
 m = 7063; %[kg]
 Xcg = 0.22; %[without unit]
@@ -44,7 +44,7 @@ CTu = 0; CLdeltae = 1.1; CDdeltae = 0; Cmdeltae = -1.5;
 %And the calculation of q to reduce expressions of equations
 q = (1/2)*(rho)*(U0)^2;
 
-%% QUESTION 1
+%QUESTION 1
 %Elements needed to construct the A matrix
 Xu = q*S/(m*U0)*(2*CD0+CDu);
 Xw = q*S/(m*U0)*(CL0-2/(pi*e*AR)*CL0*CLalpha);
@@ -70,7 +70,7 @@ ZdeltaT = q*S/(m*U0)*CLdeltaT;
 MdeltaT = q*S*C/(Iyy*U0)*CMdeltaT;
 
 
-%% QUESTION2
+%QUESTION2
 A = [Xu Xw 0 -g*cos(degtorad(theta0));
     Zu Zw U0 -g*sin(degtorad(theta0));
     Mu+Mwd*Zu Mw+Mwd*Zw Mq+U0*Mwd -Mwd*g*sin(degtorad(theta0));
@@ -81,27 +81,23 @@ B = [Xdeltae XdeltaT;
     Mdeltae+Mwd*Zdeltae MdeltaT+Mwd*ZdeltaT;
     0 0];
 
-%% QUESTION3
+%QUESTION3
 %CS: Characteristic equation
 CS = poly(A);
 
-%% QUESTION4
-eig_vals = eig(A);
+%QUESTION4
+eig_vals = eig(A)
 
-%% QUESTION5 
+%QUESTION5 
 %Short period mode
-wnSP = sqrt(eig_vals(1)*eig_vals(2)); %Natural Frequency
-% or wnSP = sqrt(Zw*Mq-U0*Mw); 
-zetaSP = -(eig_vals(1)+eig_vals(2))/(2*wnSP); %Damping Factor
-% or -(Zw+Mq+U0*Mwd)/(2*wnSP); 
+wnSP = sqrt(Zw*Mq-U0*Mw); %Natural Frequency
+zetaSP = -(Zw+Mq+U0*Mwd)/(2*wnSP); %Damping Factor
 
 %Phugoid mode
-wnPM = sqrt(eig_vals(3)*eig_vals(4));%Natural Frequency
-zetaPM  = -(eig_vals(3)+eig_vals(4))/(2*wnPM);%Damping Factor
-%wnPM = sqrt(-g/(U0*Zu)); %Natural Frequency
-%zetaPM = -Xu/(2*wnPM); %Damping Factor
+wnPM = sqrt(-g/(U0*Zu)); %Natural Frequency
+zetaPM = -Xu/(2*wnPM); %Damping Factor
 
-%% QUESTION6 Phugoid mode
+%QUESTION6 Phugoid mode
 h = 0.1;
 t=(0:h:1000);
 %Calculation of needed parameters according time:
@@ -109,79 +105,42 @@ t=(0:h:1000);
 %With initial conditions
 a1pitch = degtorad(theta0);
 a2pitch = zetaPM*wnPM*10/(wnPM*sqrt(1 - zetaPM^2));
-thetaPM = exp(-zetaPM*wnPM*t).*(a1pitch*cos(wnPM*sqrt(1-zetaPM^2)*t) + ...
-    a2pitch*sin(wnPM*sqrt(1-wnPM^2)*t));
+thetaPM = exp(-zetaPM*wnPM*t).*(a1pitch*cos(wnPM*sqrt(1-zetaPM^2)*t) + a2pitch*sin(wnPM*sqrt(1-wnPM^2)*t));
 %Pitch rate, basicly the dervative of pitch angle
 thetadPM = diff(thetaPM)/h;
 %Angle of attack
-alphaPM = thetaPM + degtorad(theta0);
+alphaPM = thetaPM + theta0;
 %Velocity (Mach number)
 %with initial conditions
 a1v = U0;
 a2v = zetaPM*wnPM*U0/(wnPM*sqrt(1-zetaPM^2));
-MPM = exp(-zetaPM*wnPM*t).*(a1v*cos(wnPM*sqrt(1-zetaPM^2)*t) + ...
-    a2v*sin(wnPM*sqrt(1-zetaPM^2)*t));
+MPM = exp(-zetaPM*wnPM)*t.*(a1v*cos(wnPM*sqrt(1-zetaPM^2)*t) + a2v*sin(wnPM*sqrt(1-zetaPM^2)*t));
 
 figure(1)
-plot(t,MPM, t, thetaPM, t(:,1:length(thetadPM)), thetadPM, t, alphaPM)
-legend('axial velocity','Pitch angle (rad)', ...
-    'Pitch rate (rad)','angle of attack (rad)');
+plot(t,thetaPM, t(:,1:length(thetadPM)),thetadPM)
+legend('Pitch angle (rad)','Pitch rate (rad)');
 grid on 
 xlabel('Time(s)');
 title('Phugoid Mode');
 
-%% QUESTION6 Short period mode
+%QUESTION6 Short period mode
 h = 0.1;
-tt=(0:h:200);
+tt=(0:h:100);
 %Calculation of needed parameters according time:
-a2SP = 0.1/(wnSP*sqrt(1-zetaSP^2)); 
-%Pitch rate
-thetadSP = exp(-zetaSP*wnSP*tt).*a2SP.*sin(wnSP*sqrt(1-zetaSP^2)*tt);
 %Pitch angle
-thetaSP = cumtrapz(tt,thetadSP); % The area under the curve
+thetaSP = theta0*exp(wnSP*(-zetaSP+1i*sqrt(1-zetaSP^2))*tt);
+%Pitch rate
+thetadSP = diff(thetaSP)/h;
 %Angle of attack
-alphaSP = thetaSP + degtorad(theta0);
+alphaPM = thetaPM + theta0;
 %Axial velocity
-a1vSP = U0;
-a2vSP = zetaSP*wnSP*U0/(wnSP*sqrt(1-zetaSP^2));
-MSP = exp(-zetaSP*wnSP*tt).*(a1vSP*cos(wnSP*sqrt(1-zetaSP^2)*tt) + ...
-    a2vSP*sin(wnSP*sqrt(1-zetaSP^2)*tt));
-
+MSP=0.1*exp(wnSP*(-zetaSP+1i*sqrt(1-zetaSP^2))*tt); 
+%M2=(exp(-T2*zetaSH*wnSH)).*((U0*cos(T2*wnSH*sqrt(1-(zetaSH^2))))+((zetaSH*wnSH*U0)/(wnSH*sqrt(1-(zetaSH^2)))*sin(T2*wnSH*sqrt(1-(zetaSH^2)))))
+ 
 figure(2)
-plot(tt,thetadSP, tt, thetaSP, tt, alphaSP)
-legend('Pitch rate (rad)', 'Pitch angle (rad)',...
-    'angle of attack (rad)');
+plot(tt,thetaSP, tt(:,1:length(thetadSP)),thetadSP)
+legend('Pitch angle (rad)','Pitch rate (rad)');
 grid on 
 xlabel('Time(s)');
 title('Short Period mode');
 commandwindow
-
-%% Transfert functions
-syms s ;
-format short;
-
-XPM=[s-Xu g; Zu/U0 s];
-DetPM = det(vpa(XPM));
-
-XSP = [s-Zw -U0; -(Mw+Mwd*Zw) s-(Mq+Mwd*U0)];
-DetSP = det(vpa(XSP));
-
-%U(s)/deltae(s)
-numeratorU=s*Xdeltae-g*Zdeltae;
-TF_U = vpa(numeratorU/DetPM);
-disp(TF_U);
-
-%Theta(s)/deltae(s)
-numeratorT=-(Zu/U0)*Xdeltae+(s-Xu)*Zdeltae;
-TF_t = vpa(numeratorT/DetPM);
-disp(TF_t);
-
-%W(s)/deltae(s)
-numeratorW=(s-(Mq+Mwd*U0))*Zdeltae+U0*(Mdeltae+Mwd*Zdeltae);
-TF_W = vpa(numeratorW/DetSP);
-disp(TF_W);
-
-%q(s)/deltae(s)
-numeratorQ = (Mw+Mwd*Zw)*Zdeltae+(s-Zw)*(Mdeltae+Mwd*Zdeltae);
-TF_q = vpa(numeratorQ/DetSP);
-disp(TF_q);
