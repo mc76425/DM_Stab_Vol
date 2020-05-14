@@ -46,14 +46,14 @@ q = (1/2)*(rho)*(U0)^2;
 
 %% QUESTION 1
 %Elements needed to construct the A matrix
-Xu = q*S/(m*U0)*(2*CD0+CDu);
+Xu = -q*S/(m*U0)*(2*CD0+CDu);
 Xw = q*S/(m*U0)*(CL0-2/(pi*e*AR)*CL0*CLalpha);
 
-Zu = q*S/(m*U0)*(2*CL0 + M^2/(1-M^2)*CL0);
-Zw = q*S/(m*U0)*(CD0+CLalpha);
+Zu = -q*S/(m*U0)*(2*CL0 + M^2/(1-M^2)*CL0);
+Zw = -q*S/(m*U0)*(CD0+CLalpha);
 Zq = q*S*C/(2*m*U0)*CLq;
 
-Mu = q*S*C/(Iyy*U0)*Cmu;
+Mu = q*S*C/(Iyy*U0)*M*Cmu;
 Mw = q*S*C/(Iyy*U0)*Cmalpha;
 Mwd = q*S*C^2/(2*Iyy*U0^2)*Cmalphad;
 Mq = q*S*C^2/(2*Iyy*U0)*Cmq;
@@ -71,9 +71,9 @@ MdeltaT = q*S*C/(Iyy*U0)*CMdeltaT;
 
 
 %% QUESTION2
-A = [Xu Xw 0 -g*cos(degtorad(theta0));
-    Zu Zw U0 -g*sin(degtorad(theta0));
-    Mu+Mwd*Zu Mw+Mwd*Zw Mq+U0*Mwd -Mwd*g*sin(degtorad(theta0));
+A = [Xu Xw 0 -g*cos(deg2rad(theta0));
+    Zu Zw U0 -g*sin(deg2rad(theta0));
+    Mu+Mwd*Zu Mw+Mwd*Zw Mq+U0*Mwd -Mwd*g*sin(deg2rad(theta0));
     0 0 1 0];
 
 B = [Xdeltae XdeltaT;
@@ -107,14 +107,14 @@ t=(0:h:1000);
 %Calculation of needed parameters according time:
 %Pitch angle
 %With initial conditions
-a1pitch = degtorad(theta0);
+a1pitch = deg2rad(theta0);
 a2pitch = zetaPM*wnPM*10/(wnPM*sqrt(1 - zetaPM^2));
 thetaPM = exp(-zetaPM*wnPM*t).*(a1pitch*cos(wnPM*sqrt(1-zetaPM^2)*t) + ...
     a2pitch*sin(wnPM*sqrt(1-wnPM^2)*t));
 %Pitch rate, basicly the dervative of pitch angle
 thetadPM = diff(thetaPM)/h;
 %Angle of attack
-alphaPM = thetaPM + degtorad(theta0);
+alphaPM = thetaPM + deg2rad(theta0);
 %Velocity (Mach number)
 %with initial conditions
 a1v = U0;
@@ -140,7 +140,7 @@ thetadSP = exp(-zetaSP*wnSP*tt).*a2SP.*sin(wnSP*sqrt(1-zetaSP^2)*tt);
 %Pitch angle
 thetaSP = cumtrapz(tt,thetadSP); % The area under the curve
 %Angle of attack
-alphaSP = thetaSP + degtorad(theta0);
+alphaSP = thetaSP + deg2rad(theta0);
 %Axial velocity
 a1vSP = U0;
 a2vSP = zetaSP*wnSP*U0/(wnSP*sqrt(1-zetaSP^2));
